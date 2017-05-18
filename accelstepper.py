@@ -63,7 +63,7 @@ while True:
     statement = input('Enter your command\n')
     if statement in ('exit','Exit','c','close'):
         p1.stop()
-        #p2.stop()
+        p2.stop()
         GPIO.cleanup()
         break
     if statement in ('multi'):
