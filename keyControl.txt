@@ -1,0 +1,132 @@
+# Reading single character by forcing stdin to raw mode
+import sys
+import tty
+import termios
+import RPi.GPIO as GPIO
+
+######################## Setup For GPIO
+#Use Board References
+GPIO.setmode(GPIO.BOARD)
+
+PulsPin1 = 13
+DirPin1 = 18
+PulsPin2 = 12
+DirPin2 = 16
+
+Up = False
+Down = True
+Right = True
+Left = False
+GPIO.setwarnings(False)
+GPIO.setup(PulsPin1,GPIO.OUT)
+GPIO.setup(DirPin1,GPIO.OUT)
+GPIO.setup(PulsPin2,GPIO.OUT)
+GPIO.setup(DirPin2,GPIO.OUT)
+GPIO.output(PulsPin1,True)
+GPIO.output(DirPin1,Down)
+GPIO.output(PulsPin2,True)
+GPIO.output(DirPin2,Right)
+
+###################################### Motor control parameters
+######################################
+
+freq1 = 250
+runtime1 = 200
+p1 = GPIO.PWM(PulsPin1,0)
+p1.start(100)
+p2 = GPIO.PWM(PulsPin2,0)
+p2.start(100)
+freqInc = 20
+sleepTime = 20
+sleepTime2 = 20  ## Tested
+freqInc2 = 200  ## Tested
+runtime2 = 500
+startFreq1 = 200
+startFreq2 = 400
+maxFreq1 = 1000
+maxFreq2 = 4000 ## Somewhat tested
+
+#########################################
+#########################################
+def readchar():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    if ch == '0x03':
+        raise KeyboardInterrupt
+    return ch
+
+def readkey(getchar_fn=None):
+    getchar = getchar_fn or readchar
+    c1 = getchar()
+    if ord(c1) != 0x1b:
+        return c1
+    c2 = getchar()
+    if ord(c2) != 0x5b:
+        return c1
+    c3 = getchar()
+    return chr(0x10 + ord(c3) - 65)  # 16=Up, 17=Down, 18=Right, 19=Left arrows
+
+# End of single character reading ###############################################
+#################################################################################
+
+wi = 0
+si = 0
+di = 0
+ai = 0
+
+
+def move1(i)
+	if (startF+freqI*i)<maxF1:
+		p1.ChangeFrequency(startF+freqI*i)
+	if (startF+freqI*i)> maxF1:
+		p1.ChangeFrrequency(maxF1)
+		
+def move2(dir,i)
+	if (startF+freqI*i)<maxF2:
+		p1.ChangeFrequency(startF2+freqI2*i)
+	if (startF+freqI*i)> maxF1:
+		p1.ChangeFrrequency(maxF1)
+		
+try:
+    while True:
+        keyp = readkey()
+        if keyp == 'w' or ord(keyp) == 16:
+			#GPIO.output(DirPin1,Up)
+			#move1(wi)
+			wi = wi+1
+            print 'Up',wi
+        elif keyp == 's' or ord(keyp) == 17:
+			#GPIO.output(DirPin1,Down)
+            #move1(si)
+			si = si+1
+            print 'Down',si
+        elif keyp == 'd' or ord(keyp) == 18:
+			#GPIO.output(DirPin2,Right)
+			#move2(di)
+			di=di+1
+            print 'Move Right',di
+        elif keyp == 'a' or ord(keyp) == 19:
+            #GPIO.output(DirPin2,Left)
+			#move2(ai)
+			ai = ai+1
+            print 'Move Left',ai
+        elif keyp == ' ':
+            print 'Stop'
+        elif ord(keyp) == 3:
+            break
+
+except KeyboardInterrupt:
+    pass
+
+finally:
+    GPIO.cleanup()
+
+	
+	
+	
+	
